@@ -11,6 +11,10 @@ To try it out you'll need to install 11 java & nodejs (dunno about gradle).
 
 ### Build & run:
 
+Firstly install all nodejs garbage:
+
+`npm install`
+
 With single terminal command:
 
 `gradlew webpack`

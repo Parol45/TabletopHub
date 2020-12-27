@@ -1,0 +1,40 @@
+body {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+}
+
+.bridg-it-table {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    height: 300px;
+    border: 1px solid black;
+}
+
+.bridg-it-row {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 9%;
+    margin: auto;
+}
+
+.blue-dot, .red-dot, .no-dot {
+    width: 10px;
+    height: 10px;
+    margin: auto;
+}
+
+.blue-dot {
+    color: blue;
+}
+
+.red-dot {
+    color: red;
+}
+
+svg {
+    display: block;
+    margin: auto;
+}

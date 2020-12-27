@@ -1,15 +1,27 @@
 ## WebApp with different mini-games
 
-Just SPA to practice fullstack development in different (maybe multiplayer!!!) games
+Simple SPA to practice fullstack development in different (maybe multiplayer!!!) games.
 
-### Build & run with:
-`npm run watch`
+Technologies stack:
+- Spring boot
+- ReactJS
+- SASS
 
-then
+To try it out you'll need to install 11 java & nodejs (dunno about gradle).
 
-`gradlew bootrun`
+### Build & run:
+
+With single terminal command:
+
+`gradlew webpack`
+
+To speed up a process of debugging you can rebuild bundle.js with:
+
+`npm run build`
+
+and then hotswap (if you're using idea: ctrl + shift + F9).
 
 ## Important TODOs
-- Merge two run commands into some kind of gradle script 
-- Change name of npm run script
-- Add docker (just4fun)
+1. Add svg dots.
+2. Add SASS.
+3. Add docker (just4fun).

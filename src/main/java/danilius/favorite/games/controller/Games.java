@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class Games {
 
-    @GetMapping("/bridge-it")
-    public String bridgeIt() {
-        return "bridge-it";
+    @GetMapping("/")
+    public String index() {
+        return "index";
     }
 }

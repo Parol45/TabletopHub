@@ -36,19 +36,23 @@ line {
     stroke-width: 3;
 }
 
-.red circle {
-    fill: rgba(255, 0, 0, 1);
+.line svg {
+    z-index: -1;
 }
 
-.red line {
-    stroke: rgba(255, 0, 0, 1);
+.red circle {
+    fill: rgba(255, 0, 0, 1);
 }
 
 .blue circle {
     fill: rgba(0, 0, 255, 1);
 }
 
-.blue line {
+.red line, #selected-dot.red circle {
+    stroke: rgba(255, 0, 0, 1);
+}
+
+.blue line, #selected-dot.blue circle {
     stroke: rgba(0, 0, 255, 1);
 }
 
@@ -60,4 +64,12 @@ line {
 .vertical svg {
     top: -22px;
     height: 54px;
+}
+
+#selected-dot.red circle, #selected-dot.blue circle  {
+    fill: rgba(255, 255, 255, 1);
+}
+
+.hidden {
+    display: none;
 }

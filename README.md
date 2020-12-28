@@ -26,6 +26,5 @@ To speed up a process of debugging you can rebuild bundle.js with:
 and then hotswap (if you're using idea: ctrl + shift + F9).
 
 ## Important TODOs
-1. Add svg dots.
-2. Add SASS.
-3. Add docker (just4fun).
+1. Add SASS.
+2. Add docker (just4fun).

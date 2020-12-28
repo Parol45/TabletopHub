@@ -3,6 +3,7 @@ package danilius.favorite.games.service;
 import danilius.favorite.games.dto.BridgItDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -34,6 +35,7 @@ public class BridgItService {
         return match;
     }
 
+    @Nullable
     public BridgItDto.BridgItCell makeMove(String color, int i1, int j1, int i2, int j2) {
         BridgItDto match = matches.get("1");
         BridgItDto.BridgItCell result = null;
@@ -60,9 +62,9 @@ public class BridgItService {
         return result;
     }
 
-    public boolean isWinningMove(BridgItDto match) {
+    public boolean isWinningMove(String color, int i1, int j1, int i2, int j2) {
 
-        return true;
+        return false;
     }
 
     public BridgItDto restart() {

@@ -1,9 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import axios from "axios";
 
 let selectedDot = null;
-let blueMove = true,
-    isGameEnded = false;
 let banner;
 
 const board = new Array(11);
@@ -34,30 +33,46 @@ class BridgItCell extends React.Component {
             elementName: this.props.elementName
         };
         board[this.props.i][this.props.j] = this;
+
         this.connectDots = this.connectDots.bind(this);
     }
 
+    postMoveToServer(color, i1, j1, i2, j2) {
+        axios.post("/api/bridg-it/move", null, {params: {color, i1, j1, i2, j2}})
+            .then(res => {
+                let i = (selectedDot.props.i + this.props.i) / 2,
+                    j = (selectedDot.props.j + this.props.j) / 2;
+                board[i][j].setState({
+                    color: res.data.color,
+                    elementName: res.data.elementName
+                });
+                if (res.status === 202) {
+                    banner.setState({isGameEnded: true});
+                } else {
+                    banner.setState({blueMove: !banner.state.blueMove});
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+            .then(() => {
+                selectedDot.setState({id: ""});
+                selectedDot = null;
+            });
+    }
+
     connectDots() {
-        let isAllowedMove = (blueMove && this.state.color === "blue") || (!blueMove && this.state.color === "red");
-        if (!isGameEnded && this.state.elementName === "dot" && isAllowedMove) {
+        let isRightTurn = (banner.state.blueMove && this.state.color === "blue") ||
+                          (!banner.state.blueMove && this.state.color === "red");
+        if (!banner.state.isGameEnded && this.state.elementName === "dot" && selectedDot !== this && isRightTurn) {
             if (selectedDot == null) {
                 selectedDot = this;
                 selectedDot.setState({id: "selected-dot"});
             } else {
-                let isVertical = selectedDot.props.j === this.props.j && Math.abs(selectedDot.props.i - this.props.i) === 2,
-                    isHorizontal = selectedDot.props.i === this.props.i && Math.abs(selectedDot.props.j - this.props.j) === 2;
-                if (selectedDot !== this && (isVertical || isHorizontal)) {
-                    let i = (selectedDot.props.i + this.props.i) / 2,
-                        j = (selectedDot.props.j + this.props.j) / 2;
-                    if (board[i][j].state.elementName === "nothing") {
-                        let elementName = isHorizontal ? "horizontal line" : "vertical line";
-                        board[i][j].setState({color: this.state.color, elementName: elementName});
-                        blueMove = !blueMove;
-                        banner.setState({blueMove: blueMove});
-                    }
-                }
-                selectedDot.setState({id: ""});
-                selectedDot = null;
+                let color = this.state.color,
+                    i1 = selectedDot.props.i, j1 = selectedDot.props.j,
+                    i2 = this.props.i, j2 = this.props.j;
+                this.postMoveToServer(color, i1, j1, i2, j2);
             }
         }
     }
@@ -69,53 +84,41 @@ class BridgItCell extends React.Component {
                 onClick: this.connectDots
             },
             figuresEnum[this.state.elementName]);
-
     }
 }
 
 class BridgItTableRow extends React.Component {
 
     render() {
-        let row = React.createElement("div", {className: "bridg-it-row"}, []);
-        for (let j = 0; j < 11; j++) {
-            let elementName, color = "";
-            if ((this.props.i + j) % 2 !== 0) {
-                color = this.props.i % 2 === 1 ? "red" : "blue";
-                elementName = "dot";
-            } else if ((j === 0 || j === 10) && this.props.i < 9 && this.props.i > 1) {
-                color = "red"
-                elementName = "vertical line"
-            } else if ((this.props.i === 0 || this.props.i === 10) && j < 9 && j > 1) {
-                color = "blue"
-                elementName = "horizontal line"
-            } else {
-                elementName = "nothing"
-            }
-            row.props.children.push(
-                React.createElement(BridgItCell, {
-                    key: this.props.i + "" + j,
-                    color: color,
-                    elementName: elementName,
-                    i: this.props.i,
-                    j: j
-                }));
+        let rowCells = new Array(11);
+        for (let j = 0; j < initData.board[this.props.i].length; j++) {
+            let color = initData.board[this.props.i][j].color,
+                elementName = initData.board[this.props.i][j].elementName;
+            let cell = React.createElement(BridgItCell, {
+                key: this.props.i + "" + j,
+                color: color,
+                elementName: elementName,
+                i: this.props.i,
+                j: j
+            });
+            rowCells.push(cell);
         }
-        return row;
+        return React.createElement("div", {className: "bridg-it-row"}, rowCells);
     }
 }
 
 class BridgItTable extends React.Component {
 
     render() {
-        let tableDiv = React.createElement("div", {className: "bridg-it-table"}, []);
+        let rows = Array(11);
         for (let i = 0; i < board.length; i++) {
             board[i] = new Array(11);
-            tableDiv.props.children.push(React.createElement(BridgItTableRow, {
+            rows.push(React.createElement(BridgItTableRow, {
                 key: i,
                 i: i,
             }));
         }
-        return tableDiv;
+        return React.createElement("div", {className: "bridg-it-table"}, rows);
     }
 }
 
@@ -131,7 +134,7 @@ class Banner extends React.Component {
     }
 
     render() {
-        return <h1>{(blueMove ? "Blue" : "Red") + (this.state.isGameEnded ? " have won!" : " move")}</h1>
+        return <h1>{(this.state.blueMove ? "Blue" : "Red") + (this.state.isGameEnded ? " have won!" : " move")}</h1>
     }
 }
 
@@ -145,4 +148,4 @@ class App extends React.Component {
 ReactDOM.render(
     <App/>,
     document.getElementById("root")
-)
+);

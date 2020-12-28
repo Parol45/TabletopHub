@@ -1,5 +1,6 @@
 package danilius.favorite.games.controller;
 
+import danilius.favorite.games.dto.BridgItDto;
 import danilius.favorite.games.service.BridgItService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -14,8 +15,14 @@ public class Games {
 
     @GetMapping("/")
     public ModelAndView index() {
+        BridgItDto initData;
+        if (bridgItService.getMatches().containsKey("1")) {
+            initData = bridgItService.getMatches().get("1");
+        } else {
+            initData = bridgItService.initMatch();
+        }
         ModelAndView mnv = new ModelAndView("index");
-        mnv.addObject("initData", bridgItService.initMatch());
+        mnv.addObject("initData", initData);
         return mnv;
     }
 }

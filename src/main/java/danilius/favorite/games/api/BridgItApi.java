@@ -23,12 +23,18 @@ public class BridgItApi {
     public ResponseEntity<BridgItDto.BridgItCell> makeMove(@RequestParam String color,
                             @RequestParam int i1, @RequestParam int j1,
                             @RequestParam int i2, @RequestParam int j2) {
-        BridgItDto.BridgItCell result = bridgItService.makeMove(color, i1, j1, i2, j2);
-        boolean isGameEnded = bridgItService.isWinningMove(color, i1, j1, i2, j2);
-        return result != null ?
-                isGameEnded ? new ResponseEntity<>(result, HttpStatus.ACCEPTED) : new ResponseEntity<>(result, HttpStatus.OK)
-                :
-                new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        BridgItDto.BridgItCell newLine = bridgItService.makeMove(color, i1, j1, i2, j2);
+        HttpStatus status;
+        if (newLine != null) {
+            if (bridgItService.haveWon(color)) {
+                status = HttpStatus.ACCEPTED;
+            } else {
+                status = HttpStatus.OK;
+            }
+        } else {
+            status = HttpStatus.BAD_REQUEST;
+        }
+        return new ResponseEntity<>(newLine, status);
     }
 
     @GetMapping("restart")

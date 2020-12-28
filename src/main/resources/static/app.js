@@ -2,9 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 import axios from "axios";
 
-let selectedDot = null;
-let banner;
-
 const board = new Array(11);
 
 const figuresEnum = Object.freeze({
@@ -22,6 +19,9 @@ const figuresEnum = Object.freeze({
             <line x1="5" y1="0" x2="5" y2="50"/>
         </svg>
 });
+
+let selectedDot = null;
+let banner;
 
 class BridgItCell extends React.Component {
 
@@ -59,6 +59,7 @@ class BridgItCell extends React.Component {
                 selectedDot.setState({id: ""});
                 selectedDot = null;
             });
+        //todo: ждать чужого хода
     }
 
     connectDots() {
@@ -73,6 +74,11 @@ class BridgItCell extends React.Component {
                     i1 = selectedDot.props.i, j1 = selectedDot.props.j,
                     i2 = this.props.i, j2 = this.props.j;
                 this.postMoveToServer(color, i1, j1, i2, j2);
+            }
+        } else {
+            if (selectedDot != null) {
+                selectedDot.setState({id: ""});
+                selectedDot = null;
             }
         }
     }

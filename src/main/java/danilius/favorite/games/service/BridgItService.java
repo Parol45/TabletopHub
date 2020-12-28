@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Sinks;
 
 import java.util.*;
 
@@ -16,29 +17,29 @@ public class BridgItService {
     private final Map<String, BridgItDto> matches;
     
     public BridgItDto initMatch() {
-        BridgItDto.BridgItCell[][] board = new BridgItDto.BridgItCell[11][11];
+        BridgItDto.Cell[][] board = new BridgItDto.Cell[11][11];
         for (int i = 0; i < 11; i++) {
             for (int j = 0; j < 11; j++) {
                 if ((i + j) % 2 != 0) {
-                    board[i][j] = new BridgItDto.BridgItCell(i % 2 == 1 ? "red" : "blue", "dot");
+                    board[i][j] = new BridgItDto.Cell(i % 2 == 1 ? "red" : "blue", "dot");
                 } else if ((j == 0 || j == 10) && i < 9 && i > 1) {
-                    board[i][j] = new BridgItDto.BridgItCell("red", "vertical line");
+                    board[i][j] = new BridgItDto.Cell("red", "vertical line");
                 } else if ((i == 0 || i == 10) && j < 9 && j > 1) {
-                    board[i][j] = new BridgItDto.BridgItCell("blue", "horizontal line");
+                    board[i][j] = new BridgItDto.Cell("blue", "horizontal line");
                 } else {
-                    board[i][j] = new BridgItDto.BridgItCell("", "nothing");
+                    board[i][j] = new BridgItDto.Cell("", "nothing");
                 }
             }
         }
-        BridgItDto match = new BridgItDto(board, true, false);
+        BridgItDto match = new BridgItDto(board, true, false, Sinks.many().multicast().onBackpressureBuffer());
         matches.put("1", match);
         return match;
     }
     
     @Nullable
-    public BridgItDto.BridgItCell makeMove(String color, int i1, int j1, int i2, int j2) {
-        BridgItDto match = matches.get("1");
-        BridgItDto.BridgItCell result = null;
+    public BridgItDto.Cell makeMove(String matchId, String color, int i1, int j1, int i2, int j2) {
+        BridgItDto match = matches.get(matchId);
+        BridgItDto.Cell result = null;
         boolean isAllowedMove = (match.isBlueMove() && color.equals("blue")) ||
                 (!match.isBlueMove() && color.equals("red")),
                 areCoordsInBounds = (i1 >= 0 && i1 < 11) && (j1 >= 0 && j1 < 11) &&
@@ -55,17 +56,27 @@ public class BridgItService {
                         j = (j1 + j2) / 2;
                 if (match.getBoard()[i][j].getElementName().equals("nothing")) {
                     String elementName = isHorizontal ? "horizontal line" : "vertical line";
-                    result = new BridgItDto.BridgItCell(color, elementName);
+                    result = new BridgItDto.Cell(color, elementName);
                     match.getBoard()[i][j] = result;
                     match.setBlueMove(!match.isBlueMove());
+                    
+                    boolean isGameEnded = haveWon(color, match.getBoard());
+                    Sinks.EmitResult emitResult = match.getMoveSink().tryEmitNext(new BridgItDto.Move(i, j, result, isGameEnded));
+                    if (isGameEnded) {
+                        match.setGameEnded(true);
+                        match.setBlueMove(!match.isBlueMove());
+                        match.getMoveSink().tryEmitComplete();
+                    }
+                    if (emitResult.isFailure()) {
+                        System.out.println("Couldn't emit new move " + emitResult.name());
+                    }
                 }
             }
         }
         return result;
     }
     
-    public boolean haveWon(String color) {
-        BridgItDto.BridgItCell[][] board = matches.get("1").getBoard();
+    public boolean haveWon(String color, BridgItDto.Cell[][] board) {
         Set<CoordPair> visitedNodes = new HashSet<>(),
                 goal = new HashSet<>();
         Queue<CoordPair> queue = new ArrayDeque<>();
@@ -86,7 +97,6 @@ public class BridgItService {
                     .noneMatch(vn -> i == vn.i && j == vn.j)) {
                 if (goal.stream()
                         .anyMatch(goalCell -> i == goalCell.i && j == goalCell.j)) {
-                    matches.get("1").setGameEnded(true);
                     return true;
                 }
                 addNeighborNodeToQueue(queue, board, i, j, i - 2, j, i - 1, j);
@@ -99,7 +109,7 @@ public class BridgItService {
         return false;
     }
     
-    private void addNeighborNodeToQueue(Queue<CoordPair> queue, BridgItDto.BridgItCell[][] board,
+    private void addNeighborNodeToQueue(Queue<CoordPair> queue, BridgItDto.Cell[][] board,
                                         int currI, int currJ,
                                         int newI, int newJ,
                                         int lineI, int lineJ) {

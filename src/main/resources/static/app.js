@@ -39,19 +39,6 @@ class BridgItCell extends React.Component {
 
     postMoveToServer(color, i1, j1, i2, j2) {
         axios.post("/api/bridg-it/move", null, {params: {color, i1, j1, i2, j2}})
-            .then(res => {
-                let i = (selectedDot.props.i + this.props.i) / 2,
-                    j = (selectedDot.props.j + this.props.j) / 2;
-                board[i][j].setState({
-                    color: res.data.color,
-                    elementName: res.data.elementName
-                });
-                if (res.status === 202) {
-                    banner.setState({isGameEnded: true});
-                } else {
-                    banner.setState({blueMove: !banner.state.blueMove});
-                }
-            })
             .catch((error) => {
                 console.log(error);
             })
@@ -59,7 +46,6 @@ class BridgItCell extends React.Component {
                 selectedDot.setState({id: ""});
                 selectedDot = null;
             });
-        //todo: ждать чужого хода
     }
 
     connectDots() {
@@ -137,6 +123,20 @@ class Banner extends React.Component {
             blueMove: initData.blueMove
         };
         banner = this;
+        let evtSource = new EventSource('/api/bridg-it/subscribe');
+        evtSource.onmessage = (e) => {
+            let deserData = JSON.parse(e.data);
+            board[deserData.i][deserData.j].setState({
+                color: deserData.cell.color,
+                elementName: deserData.cell.elementName
+            });
+            if (deserData.winning) {
+                banner.setState({isGameEnded: true});
+                evtSource.close();
+            } else {
+                banner.setState({blueMove: !banner.state.blueMove});
+            }
+        }
     }
 
     render() {
@@ -146,8 +146,19 @@ class Banner extends React.Component {
 
 class App extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            table: React.createElement(BridgItTable)
+        };
+    }
+
+    reloadGame() {
+
+    }
+
     render() {
-        return [<Banner/>, <BridgItTable/>]
+        return [<Banner/>, this.state.table]
     }
 }
 

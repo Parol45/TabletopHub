@@ -4,6 +4,12 @@ body {
     padding: 0;
 }
 
+svg {
+    display: block;
+    margin: auto;
+    position: relative;
+}
+
 .bridg-it-table {
     display: flex;
     flex-direction: column;
@@ -20,21 +26,38 @@ body {
     margin: auto;
 }
 
-.blue-dot, .red-dot, .no-dot {
-    width: 10px;
-    height: 10px;
+.dot, .nothing, .line {
+    width: 16px;
+    height: 16px;
     margin: auto;
 }
 
-.blue-dot {
-    color: blue;
+line {
+    stroke-width: 3;
 }
 
-.red-dot {
-    color: red;
+.red circle {
+    fill: rgba(255, 0, 0, 1);
 }
 
-svg {
-    display: block;
-    margin: auto;
+.red line {
+    stroke: rgba(255, 0, 0, 1);
+}
+
+.blue circle {
+    fill: rgba(0, 0, 255, 1);
+}
+
+.blue line {
+    stroke: rgba(0, 0, 255, 1);
+}
+
+.horizontal svg {
+    left: -22px;
+    width: 54px;
+}
+
+.vertical svg {
+    top: -22px;
+    height: 54px;
 }

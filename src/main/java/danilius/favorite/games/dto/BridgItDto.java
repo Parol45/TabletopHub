@@ -10,7 +10,7 @@ import reactor.core.publisher.Sinks;
 public class BridgItDto {
     private Cell[][] board;
     private boolean blueMove, gameEnded;
-    private transient Sinks.Many<Move> moveSink;
+    private final transient Sinks.Many<Move> moveSink;
 
     @Value
     @AllArgsConstructor
